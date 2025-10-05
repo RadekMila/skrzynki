@@ -1,0 +1,5 @@
+Prosta symulacja skrzynek z CS:GO
+uzytkownik wybiera skrzynke w zaleznosci od wpisanej liczby 1-3.W konsoli sa one ułozone pod siebie.Skrzynia breakout|skrzynia Phoneix|skrzynia gamma|, 1|2|3.Jeżeli uzytkownik nie wpisze 1,2 lub 3 to jest cofany aby ponownie wpisał liczbe.
+Najpierw tworzone są listy wszystkich skinów z każdej skrzynek w osobych funkcjach a potem wywoływane, przekazywane są listy po przez (global)
+W kolejnej funkcji odbywa sie losowanie najpierw rzadkosci skina np nibieski, różowy itp.Potem w zależnosci od wylosowanej rzadkosci losowanie skina odbywa sie w dobranej do wylosowanej rzadkosciskina z listy.
+w funkcji losowania jest tez krótka animacja losowania przez \r ktora nadpisuje wyrazy w konsoli 20 razy.animacja losowania odbywa się w liście wszystkich skinów z danej skrzynki ale pod koniec jest nadpisana skinem z listy wylosowanej rzadkosci.

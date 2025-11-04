@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>RPG Tekstowy</title>
+    <style>
+        body {
+            background: linear-gradient(135deg, #1a1a1a, #222);
+            color: #f8f8f8;
+            font-family: 'Consolas', monospace;
+            text-align: center;
+            padding: 30px;
+        }
+        .container {
+            width: 600px;
+            margin: 0 auto;
+            background: #2c2c2c;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(255,255,255,0.1);
+        }
+        h1 { color: #00ff88; }
+        .stats, .monster, .log {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 10px;
+            background: #333;
+        }
+        .button {
+            background: #00ff88;
+            color: black;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 10px;
+            font-size: 16px;
+        }
+        .button:hover { background: #00cc6a; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>🧙‍♂️ Tekstowe RPG</h1>
+
+    <div class="stats">
+        <h3>Postać</h3>
+        <p><b>Nazwa:</b> <span id="char-name">...</span></p>
+        <p><b>HP:</b> <span id="char-hp">...</span>/<span id="char-maxhp">...</span></p>
+        <p><b>Mana:</b> <span id="char-mana">...</span></p>
+        <p><b>Doświadczenie:</b> <span id="char-exp">...</span></p>
+        <p><b>Atak postaci:</b> <span id="char-attack">...</span></p>
+    </div>
+
+    <div class="monster">
+        <h3>Potwór</h3>
+        <p><b>Nazwa:</b> <span id="monster-name">...</span></p>
+        <p><b>HP:</b> <span id="monster-hp">...</span></p>
+        <p><b>Atak potwora:</b> <span id="monster-attack">...</span></p>
+    </div>
+
+    <div class="actions">
+        <button class="button" onclick="performAction('attack')">⚔️ Atakuj</button>
+        <button class="button" onclick="performAction('potion')">🧪 Mikstura</button>
+        <button class="button" onclick="performAction('new')">🆕 Nowy potwór</button>
+    </div>
+
+    <div class="log">
+        <h3>Walka</h3>
+        <p id="log-text">Rozpoczynasz przygodę...</p>
+    </div>
+</div>
+
+<script>
+const charId = {{ character_id }};
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+const csrftoken = getCookie('csrftoken');
+
+async function getGameState() {
+    const res = await fetch(`/api/play-json/${charId}/`);
+    const data = await res.json();
+    updateUI(data);
+}
+
+async function performAction(action) {
+    const res = await fetch(`/api/play-json/${charId}/`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": csrftoken,
+        },
+        body: JSON.stringify({ action: action })
+    });
+    const data = await res.json();
+    updateUI(data);
+}
+
+function updateUI(data) {
+    if (data.character) {
+        document.getElementById("char-name").textContent = data.character.name;
+        document.getElementById("char-hp").textContent = data.character.health;
+        document.getElementById("char-maxhp").textContent = data.character.max_health;
+        document.getElementById("char-mana").textContent = data.character.mana;
+        document.getElementById("char-exp").textContent = data.character.experience;
+        document.getElementById("char-attack").textContent = data.stats?.character_attack ?? "-";
+    }
+
+    if (data.monster) {
+        document.getElementById("monster-name").textContent = data.monster.name;
+        document.getElementById("monster-hp").textContent = data.monster.health;
+        document.getElementById("monster-attack").textContent = data.stats?.monster_attack ?? "-";
+    } else {
+        document.getElementById("monster-name").textContent = "Brak potwora";
+        document.getElementById("monster-hp").textContent = "-";
+        document.getElementById("monster-attack").textContent = "-";
+    }
+
+    if (data.message) {
+        document.getElementById("log-text").textContent = data.message;
+    }
+
+
+    if (data.game_over) {
+        document.querySelectorAll("button").forEach(btn => btn.disabled = true);
+        document.getElementById("log-text").textContent += " 🕯️ Koniec przygody.";
+    }
+}
+
+getGameState();
+</script>
+</body>
+</html>
